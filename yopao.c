@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #define  MAX 200
@@ -12,13 +13,15 @@ struct produto {
   int quantidade;
 };
 
-void confirmacao() {
+void confirmacao(bool mostrarMensagem) {
   setbuf(stdin, NULL);
-
-  printf("Pressione Enter para continuar...");
+  if (mostrarMensagem) printf("Pressione Enter para continuar...");
   getchar();
-
   setbuf(stdin, NULL);
+}
+
+void limpar() {
+  system("clear || cls");
 }
 
 int inputInt (char mensagem[]) {
@@ -69,6 +72,12 @@ float inputFloat (char mensagem[]) {
 }
 
 void listarProdutos(struct produto produtos[], int lenth) {
+  limpar();
+  if (lenth == 0) {
+    printf("Nenhum produto cadastrado no sistema.\n");
+    return;
+  }
+
   printf("ID | NOME            | PREÇO     | TIPO\n");
   for (int i = 0; i < lenth; i++) {
     char tipo[10];
@@ -84,12 +93,14 @@ void listarProdutos(struct produto produtos[], int lenth) {
 }
 
 /* Função cadastrar retorna o próximo ID disponível para cadastro no sistema */
-int cadastrar(struct produto produtos[], int lenth, int id) {
-  int erro = 0;
+void cadastrar(struct produto produtos[], int lenth) {
+  static int contadorID = 0;
+  bool erro = false;
 
+  limpar();
   printf("== Novo Produto ==\n");
 
-  produtos[lenth].id = ++id;
+  produtos[lenth].id = ++contadorID;
   printf("Nome do produto: ");
   scanf("%s", &produtos[lenth].nome);
   produtos[lenth].preco = inputFloat("Preço: ");
@@ -104,9 +115,7 @@ int cadastrar(struct produto produtos[], int lenth, int id) {
   produtos[lenth].quantidade = inputInt("Quantidade em estoque: ");
 
   printf("Produto \"%s\" cadastrado com sucesso!\n", produtos[lenth].nome);
-  confirmacao();
-
-  return id;
+  confirmacao(true);
 }
 
 int buscar (struct produto produtos[], int lenth, int id) {
@@ -128,16 +137,24 @@ int buscar (struct produto produtos[], int lenth, int id) {
 
 /* A função deletar retorna 1 se a deleção for bem sucedida, ou 0 se a deleção for cancelada */
 int deletar(struct produto produtos[], int lenth) {
+  limpar();
+
+  if (lenth == 0) {
+    printf("Nenhum produto cadastrado no sistema.\n");
+    confirmacao(true);
+    return false;
+  }
+
   printf("== Deletar Produto ==\n");
   printf("Digite o ID de um dos produtos da lista para deletar:\n");
-  confirmacao();
+  confirmacao(true);
   listarProdutos(produtos, lenth);
 
   int id = inputInt("ID do item a ser deletado (-1 para cancelar): ");
-  if (id == -1) return 0;
+  if (id == -1) return false;
 
   int posicao = buscar(produtos, lenth, id);
-  
+
   for (int i = 0; i < lenth; i++) {
     if (i == posicao) {
       produtos[i] = produtos[i+1];
@@ -147,37 +164,58 @@ int deletar(struct produto produtos[], int lenth) {
 
   listarProdutos(produtos, --lenth);
 
-  return 1;
+  return true;
 }
+
+
 
 /* A função Menu exibe o menu de opções do programa, em seguida lê a entrada do usuário, que é o retorno */
 int menu () {
   int opcao;
 
   do {
-    system("clear || cls");
-    opcao = inputInt("1 - Cadastrar Produtos\n2 - Listar Produtos\n3 - Buscar Produto\n4 - Alterar Informações de Produto\n5 - Remover Produto\n6 - Realizar Venda\n7 - Sair\n");
-    if (opcao < 1 || opcao > 7) {
+    limpar();
+    opcao = inputInt("1 - Cadastrar Produtos\n2 - Listar Produtos\n3 - Alterar Informações de Produto\n4 - Remover Produto\n5 - Realizar Venda\n6 - Sair\n");
+    if (opcao < 1 || opcao > 6) {
       printf("Opção Inválida. Tente Novamente\n");
-      setbuf(stdin, NULL);
-      getchar();
+      confirmacao(false);
     }
-  } while (opcao < 1 || opcao > 7);
+  } while (opcao < 1 || opcao > 6);
 
   return opcao;
 }
 
 int main() {
   struct produto produtos[MAX];
-  int lenth = 4;
-  int contadorID = 4;
+  int lenth = 0;
 
-  /*contadorID = cadastrar(produtos, lenth, contadorID);
-  lenth++;
-  contadorID = cadastrar(produtos, lenth, contadorID);
-  lenth++;*/
+  /* MENU */
+  int opcao;
 
-  produtos[0].id = 0;
+  do {
+    opcao = menu();
+    switch (opcao) {
+      case 1:
+        cadastrar(produtos, lenth);
+        lenth++;
+        break;
+      case 2:
+        listarProdutos(produtos, lenth);
+        confirmacao(true);
+        break;
+      //case 3:
+      case 4:
+        if (deletar(produtos, lenth)) lenth--;
+        break;
+      //case 5:
+      case 6: break;
+      default:
+        printf("Opção Inválida. Tente Novamente\n");
+        confirmacao(false);
+    }
+  } while(opcao != 6);
+
+  /*produtos[0].id = 0;
   strcpy(produtos[0].nome,"Pão");
   produtos[0].preco = 0.5;
   produtos[0].categoria = 1;
@@ -199,11 +237,11 @@ int main() {
   strcpy(produtos[3].nome,"Outro Vinho");
   produtos[3].preco = 50;
   produtos[3].categoria = 2;
-  produtos[3].quantidade = 5;
+  produtos[3].quantidade = 5;*/
 
   /*printf("LISTA\n");
   listarProdutos(produtos, lenth);*/
-  if (deletar(produtos, lenth)) lenth--;
+  //if (deletar(produtos, lenth)) lenth--;
 
 
   return 0;
