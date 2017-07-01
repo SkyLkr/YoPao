@@ -89,17 +89,19 @@ void listarProdutos(struct produto produtos[], int lenth) {
     return;
   }
 
-  printf("ID\t|NOME\t\t\t\t|PREÇO\t\t|QUANT\t|TIPO\n");
+  printf("%-2s|%-30s|%-10s|%-10s|%-7s\n", "ID", "Nome", "Preço", "Quantidade", "Tipo");
   for (int i = 0; i < lenth; i++) {
     char tipo[10];
 
     if (produtos[i].categoria == 1) strcpy(tipo, "Comida");
     else if (produtos[i].categoria == 2) strcpy(tipo, "Bebida");
 
-    printf("%d\t|", produtos[i].id);
-    printf("%s\t\t\t\t|", produtos[i].nome);
-    printf("R$ %.2f\t|", produtos[i].preco);
-    printf("%d\t|", produtos[i].quantidade);
+    printf("%-2d|", produtos[i].id);
+    printf("%-30s|", produtos[i].nome);
+    printf("R$ ");
+    if (produtos[i].preco < 10) printf("  ");
+    printf("%.2f|", produtos[i].preco);
+    printf("%-10d|", produtos[i].quantidade);
     printf("%s\n", tipo);
   }
 }
