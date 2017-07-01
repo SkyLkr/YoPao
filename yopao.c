@@ -29,9 +29,10 @@ int inputInt (char mensagem[]) {
   int saida;
 
   printf("%s", mensagem);
-  scanf("%s", &entrada);
+  setbuf(stdin, NULL);
+  fgets(entrada, 255, stdin);
 
-  if (strcmp(entrada, "0") == 0) {
+  if (strcmp(entrada, "0\n") == 0) {
     return 0;
   } else {
     saida = atoi(entrada);
@@ -39,7 +40,7 @@ int inputInt (char mensagem[]) {
       return saida;
     }
     else {
-      printf("Entrada Inválida! Tente novamente.\n");
+      printf("Erro! Você deve inserir um número inteiro. Tente novamente.\n");
       return inputInt(mensagem);
     }
   }
@@ -50,14 +51,15 @@ float inputFloat (char mensagem[]) {
   float saida;
 
   printf("%s", mensagem);
-  scanf("%s", &entrada);
+  setbuf(stdin, NULL);
+  fgets(entrada, 255, stdin);
 
   for (int i = 0; i < strlen(entrada); i++) {
     if (entrada[i] == ',')
       entrada[i] = '.';
   }
 
-  if ((strcmp(entrada, "0") == 0) || (strcmp(entrada, "0.0") == 0)) {
+  if ((strcmp(entrada, "0\n") == 0) || (strcmp(entrada, "0.0\n") == 0)) {
     return 0;
   } else {
     saida = atof(entrada);
@@ -65,7 +67,7 @@ float inputFloat (char mensagem[]) {
       return saida;
     }
     else {
-      printf("Entrada Inválida! Tente novamente.\n");
+      printf("Erro! Você deve inserir um número inteiro ou decimal! Tente novamente.\n");
       return inputInt(mensagem);
     }
   }
@@ -129,9 +131,25 @@ int buscar (struct produto produtos[], int lenth, int id) {
 
   if (posicao == -1) {
     printf("ID inválido! Este ID não está cadastrado no sistema.\n");
-    return buscar(produtos, lenth, inputInt("Digite um novo id: "));
+    confirmacao(true);
+  }
+
+  return posicao;
+}
+
+void buscarExibir (struct produto produtos[], int lenth) {
+  limpar();
+  printf("== Buscar um Produto ==\n");
+  int id = inputInt("Informe o ID do produto que deseja buscar: ");
+  int posicao = buscar(produtos, lenth, id);
+
+  if (posicao == -1) {
+    return;
   } else {
-    return posicao;
+    struct produto produtoEncontrado[1];
+    produtoEncontrado[0] = produtos[posicao];
+    listarProdutos(produtoEncontrado, 1);
+    confirmacao(true);
   }
 }
 
@@ -150,10 +168,13 @@ int deletar(struct produto produtos[], int lenth) {
   confirmacao(true);
   listarProdutos(produtos, lenth);
 
-  int id = inputInt("ID do item a ser deletado (-1 para cancelar): ");
-  if (id == -1) return false;
+  int id, posicao = -1;
+  do {
+    id = inputInt("ID do item a ser deletado (-1 para cancelar): ");
+    if (id == -1) return false;
 
-  int posicao = buscar(produtos, lenth, id);
+    posicao = buscar(produtos, lenth, id);
+  } while (posicao == -1);
 
   for (int i = 0; i < lenth; i++) {
     if (i == posicao) {
@@ -162,8 +183,6 @@ int deletar(struct produto produtos[], int lenth) {
     }
   }
 
-  listarProdutos(produtos, --lenth);
-
   return true;
 }
 
@@ -171,18 +190,8 @@ int deletar(struct produto produtos[], int lenth) {
 
 /* A função Menu exibe o menu de opções do programa, em seguida lê a entrada do usuário, que é o retorno */
 int menu () {
-  int opcao;
-
-  do {
-    limpar();
-    opcao = inputInt("1 - Cadastrar Produtos\n2 - Listar Produtos\n3 - Alterar Informações de Produto\n4 - Remover Produto\n5 - Realizar Venda\n6 - Sair\n");
-    if (opcao < 1 || opcao > 6) {
-      printf("Opção Inválida. Tente Novamente\n");
-      confirmacao(false);
-    }
-  } while (opcao < 1 || opcao > 6);
-
-  return opcao;
+  limpar();
+  return inputInt("1 - Cadastrar Produtos\n2 - Listar Produtos\n3 - Buscar Produto\n4 - Alterar Informações de Produto\n5 - Remover Produto\n6 - Realizar Venda\n7 - Sair\n");;
 }
 
 int main() {
@@ -203,17 +212,20 @@ int main() {
         listarProdutos(produtos, lenth);
         confirmacao(true);
         break;
-      //case 3:
-      case 4:
+      case 3:
+        buscarExibir(produtos, lenth);
+        break;
+      case 5:
         if (deletar(produtos, lenth)) lenth--;
         break;
       //case 5:
-      case 6: break;
+      case 7:
+        break;
       default:
         printf("Opção Inválida. Tente Novamente\n");
         confirmacao(false);
     }
-  } while(opcao != 6);
+  } while(opcao != 7);
 
   /*produtos[0].id = 0;
   strcpy(produtos[0].nome,"Pão");
