@@ -76,7 +76,7 @@ float inputFloat (char mensagem[]) {
     }
     else {
       printf("Erro! Você deve inserir um número inteiro ou decimal! Tente novamente.\n");
-      return inputInt(mensagem);
+      return inputFloat(mensagem);
     }
   }
 }
