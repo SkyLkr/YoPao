@@ -13,6 +13,8 @@ struct produto {
   int quantidade;
 };
 
+// Caso o parâmetro passado seja verdadeiro (true ou 1), solicita ao usuário que pressione ENTER.
+// Depois pausa a execução do programa até que a tecla seja pressionada.
 void confirmacao(bool mostrarMensagem) {
   setbuf(stdin, NULL);
   if (mostrarMensagem) printf("Pressione Enter para continuar...");
@@ -20,19 +22,23 @@ void confirmacao(bool mostrarMensagem) {
   setbuf(stdin, NULL);
 }
 
+// Função para limpar a tela
 void limpar() {
   system("clear || cls");
 }
 
+// Função para ler números inteiros fazendo a verificação se a entrada é válida.
+// Imprime a string passada no parâmetro e retorna o valor inserido pelo usuário.
+// Em caso de erro, é exibido um aviso e a função é executada novamente.
 int inputInt (char mensagem[]) {
   char entrada[255];
   int saida;
 
   printf("%s", mensagem);
   setbuf(stdin, NULL);
-  fgets(entrada, 255, stdin);
+  scanf("%[^\n]s", &entrada);
 
-  if (strcmp(entrada, "0\n") == 0) {
+  if (strcmp(entrada, "0") == 0) {
     return 0;
   } else {
     saida = atoi(entrada);
@@ -46,20 +52,22 @@ int inputInt (char mensagem[]) {
   }
 }
 
+// Função para ler números float fazendo a verificação se a entrada é válida.
+// Exeto pelo tipo do retorno, que é um float, a função funciona de forma similar à inputInt
 float inputFloat (char mensagem[]) {
   char entrada[255];
   float saida;
 
   printf("%s", mensagem);
   setbuf(stdin, NULL);
-  fgets(entrada, 255, stdin);
+  scanf("%[^\n]s", &entrada);
 
   for (int i = 0; i < strlen(entrada); i++) {
-    if (entrada[i] == ',')
+    if (entrada[i] == ',') // Caso seja inserido valor decimal separado por vírgula, este é trocado para ponto.
       entrada[i] = '.';
   }
 
-  if ((strcmp(entrada, "0\n") == 0) || (strcmp(entrada, "0.0\n") == 0)) {
+  if ((strcmp(entrada, "0") == 0) || (strcmp(entrada, "0.0\n") == 0)) {
     return 0;
   } else {
     saida = atof(entrada);
@@ -73,6 +81,7 @@ float inputFloat (char mensagem[]) {
   }
 }
 
+// Exibe uma lista com todos os produtos cadastrados no sistema.
 void listarProdutos(struct produto produtos[], int lenth) {
   limpar();
   if (lenth == 0) {
@@ -94,7 +103,7 @@ void listarProdutos(struct produto produtos[], int lenth) {
   }
 }
 
-/* Função cadastrar retorna o próximo ID disponível para cadastro no sistema */
+// Função para cadastrar novos produtos no sistema.
 void cadastrar(struct produto produtos[], int lenth) {
   static int contadorID = 0;
   bool erro = false;
@@ -104,7 +113,8 @@ void cadastrar(struct produto produtos[], int lenth) {
 
   produtos[lenth].id = ++contadorID;
   printf("Nome do produto: ");
-  scanf("%s", &produtos[lenth].nome);
+  setbuf(stdin, NULL);
+  scanf("%[^\n]s", &produtos[lenth].nome);
   produtos[lenth].preco = inputFloat("Preço: ");
 
   do {
@@ -112,7 +122,7 @@ void cadastrar(struct produto produtos[], int lenth) {
     erro = produtos[lenth].categoria < 1 || produtos[lenth].categoria > 2;
     if (erro)
       printf("Erro! Categoria Inválida\n");
-  } while (erro);
+  } while (erro); // Caso seja digitado um valor que não pertence à nenhuma categoria, é solicitada uma nova entrada.
 
   produtos[lenth].quantidade = inputInt("Quantidade em estoque: ");
 
@@ -120,7 +130,9 @@ void cadastrar(struct produto produtos[], int lenth) {
   confirmacao(true);
 }
 
-int buscar (struct produto produtos[], int lenth, int id) {
+// Busca a posição de um produto no vetor de produtos usando o seu id para a busca.
+// A função retorna -1 caso a busca não encontre o produto com o id informado no parâmetro.
+int buscarIndice (struct produto produtos[], int lenth, int id) {
   int posicao = -1;
 
   for (int i = 0; i < lenth; i++) {
@@ -137,24 +149,30 @@ int buscar (struct produto produtos[], int lenth, int id) {
   return posicao;
 }
 
-void buscarExibir (struct produto produtos[], int lenth) {
+// Faz a busca de um produto e o exibe na tela.
+void buscarProduto (struct produto produtos[], int lenth) {
   limpar();
   printf("== Buscar um Produto ==\n");
   int id = inputInt("Informe o ID do produto que deseja buscar: ");
-  int posicao = buscar(produtos, lenth, id);
+  int posicao = buscarIndice(produtos, lenth, id);// Função buscarIndice utilizada para descobrir a posicao do produto no vetor.
 
-  if (posicao == -1) {
+  if (posicao == -1) {//Caso a busca seja mal sucedida, a função é encerrada.
     return;
-  } else {
-    struct produto produtoEncontrado[1];
-    produtoEncontrado[0] = produtos[posicao];
-    listarProdutos(produtoEncontrado, 1);
+  } else {// Caso a busca encontre o produto
+    struct produto produtoEncontrado[1];// É criada um vetor de produtos com o produto.
+    produtoEncontrado[0] = produtos[posicao];// O produto é copiado para o vetor de uma posição.
+    listarProdutos(produtoEncontrado, 1);// A função listarProdutos é utilizada para mostrar as informações do produto encontrado.
     confirmacao(true);
   }
 }
 
-/* A função deletar retorna 1 se a deleção for bem sucedida, ou 0 se a deleção for cancelada */
-int deletar(struct produto produtos[], int lenth) {
+void alterarProduto() {
+  
+}
+
+// A função deletarProduto apaga um produto do vetor.
+// Retorna 1 se a deleção for bem sucedida, ou 0 se a deleção for cancelada.
+int deletarProduto(struct produto produtos[], int lenth) {
   limpar();
 
   if (lenth == 0) {
@@ -173,7 +191,7 @@ int deletar(struct produto produtos[], int lenth) {
     id = inputInt("ID do item a ser deletado (-1 para cancelar): ");
     if (id == -1) return false;
 
-    posicao = buscar(produtos, lenth, id);
+    posicao = buscarIndice(produtos, lenth, id);
   } while (posicao == -1);
 
   for (int i = 0; i < lenth; i++) {
@@ -185,8 +203,6 @@ int deletar(struct produto produtos[], int lenth) {
 
   return true;
 }
-
-
 
 /* A função Menu exibe o menu de opções do programa, em seguida lê a entrada do usuário, que é o retorno */
 int menu () {
@@ -213,10 +229,10 @@ int main() {
         confirmacao(true);
         break;
       case 3:
-        buscarExibir(produtos, lenth);
+        buscarProduto(produtos, lenth);
         break;
       case 5:
-        if (deletar(produtos, lenth)) lenth--;
+        if (deletarProduto(produtos, lenth)) lenth--;
         break;
       //case 5:
       case 7:
@@ -226,35 +242,6 @@ int main() {
         confirmacao(false);
     }
   } while(opcao != 7);
-
-  /*produtos[0].id = 0;
-  strcpy(produtos[0].nome,"Pão");
-  produtos[0].preco = 0.5;
-  produtos[0].categoria = 1;
-  produtos[0].quantidade = 12;
-
-  produtos[1].id = 1;
-  strcpy(produtos[1].nome,"Vinho");
-  produtos[1].preco = 50;
-  produtos[1].categoria = 2;
-  produtos[1].quantidade = 5;
-
-  produtos[2].id = 2;
-  strcpy(produtos[2].nome,"Mais Vinho");
-  produtos[2].preco = 50;
-  produtos[2].categoria = 2;
-  produtos[2].quantidade = 5;
-
-  produtos[3].id = 3;
-  strcpy(produtos[3].nome,"Outro Vinho");
-  produtos[3].preco = 50;
-  produtos[3].categoria = 2;
-  produtos[3].quantidade = 5;*/
-
-  /*printf("LISTA\n");
-  listarProdutos(produtos, lenth);*/
-  //if (deletar(produtos, lenth)) lenth--;
-
 
   return 0;
 }
