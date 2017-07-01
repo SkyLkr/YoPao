@@ -89,17 +89,18 @@ void listarProdutos(struct produto produtos[], int lenth) {
     return;
   }
 
-  printf("ID | NOME            | PREÇO     | TIPO\n");
+  printf("ID\t|NOME\t\t\t\t|PREÇO\t\t|QUANT\t|TIPO\n");
   for (int i = 0; i < lenth; i++) {
     char tipo[10];
 
     if (produtos[i].categoria == 1) strcpy(tipo, "Comida");
     else if (produtos[i].categoria == 2) strcpy(tipo, "Bebida");
 
-    printf("%*d| ", -3, produtos[i].id);
-    printf("%*s| ", -17, produtos[i].nome);
-    printf("R$ %4.2f| ", produtos[i].preco);
-    printf("%*s\n", -8, tipo);
+    printf("%d\t|", produtos[i].id);
+    printf("%s\t\t\t\t|", produtos[i].nome);
+    printf("R$ %.2f\t|", produtos[i].preco);
+    printf("%d\t|", produtos[i].quantidade);
+    printf("%s\n", tipo);
   }
 }
 
@@ -166,8 +167,65 @@ void buscarProduto (struct produto produtos[], int lenth) {
   }
 }
 
-void alterarProduto() {
-  
+// Imprime a mensagem ao usuário. Caso a resposta seja S (Sim), é retornado true.
+// Caso o usuário digite outra coisa qualquer, é retornado false;
+bool temCerteza (char mensagem[]) {
+  printf("%s(1-Sim / 2-Não)", mensagem);
+  int resposta = inputInt("");
+  setbuf(stdin, NULL);
+  if (resposta == 1) {
+    return true;
+  } else if (resposta == 2){
+    return false;
+  } else {
+    printf("Resposta Inválida\n");
+    return temCerteza(mensagem);
+  }
+}
+
+void alterarProduto(struct produto produtos[], int lenth) {
+  limpar();
+
+  if (lenth == 0) {
+    printf("Nenhum produto cadastrado no sistema.\n");
+    confirmacao(true);
+    return;
+  }
+
+  printf("== Alterar Produto ==\n");
+  printf("Digite o ID de um dos produtos da lista para alterar:\n");
+  confirmacao(true);
+  listarProdutos(produtos, lenth);
+
+  int id, posicao = -1;
+  do {
+    id = inputInt("ID do item a ser alterado (-1 para cancelar): ");
+    if (id == -1) return;
+
+    posicao = buscarIndice(produtos, lenth, id);
+  } while (posicao == -1);
+
+  if (temCerteza("Deseja alterar o nome do produto?")) {
+    printf("Nome do produto: ");
+    setbuf(stdin, NULL);
+    scanf("%[^\n]s", &produtos[posicao].nome);
+  }
+
+  if (temCerteza("Deseja alterar o preço?")) produtos[posicao].preco = inputFloat("Preço: ");
+
+  if (temCerteza("Deseja alterar a categoria?")) {
+    bool erro = false;
+    do {
+      produtos[posicao].categoria = inputInt("Informe uma categoria para o produto:\n1-Comestíveis\n2-Bebidas\n");
+      erro = produtos[posicao].categoria < 1 || produtos[posicao].categoria > 2;
+      if (erro)
+        printf("Erro! Categoria Inválida\n");
+    } while (erro); // Caso seja digitado um valor que não pertence à nenhuma categoria, é solicitada uma nova entrada.
+  }
+
+  if (temCerteza("Deseja alterar a quantidade?")) produtos[posicao].quantidade = inputInt("Quantidade em estoque: ");
+  printf("Produto \"%s\" foi alterado com sucesso!\n", produtos[posicao].nome);
+  confirmacao(true);
 }
 
 // A função deletarProduto apaga um produto do vetor.
@@ -200,25 +258,77 @@ int deletarProduto(struct produto produtos[], int lenth) {
       posicao++;
     }
   }
-
+  printf("Produto excluído com sucesso!\n");
+  confirmacao(true);
   return true;
 }
 
-/* A função Menu exibe o menu de opções do programa, em seguida lê a entrada do usuário, que é o retorno */
-int menu () {
+float venderProduto(struct produto produtos[], int lenth) {
   limpar();
+
+  if (lenth == 0) {
+    printf("Nenhum produto cadastrado no sistema.\n");
+    confirmacao(true);
+    return 0;
+  }
+
+  float lucro = 0;
+
+  do {
+    limpar();
+    printf("== Vender Produto ==\n");
+    printf("Digite o ID do produto a ser vendido:\n");
+    confirmacao(true);
+    listarProdutos(produtos, lenth);
+
+    int id, posicao, quantidade;
+    do {
+      id = inputInt("ID do item a ser vendido (-1 para cancelar): ");
+      if (id == -1) return 0;
+
+      posicao = buscarIndice(produtos, lenth, id);
+    } while (posicao == -1);
+
+    quantidade = inputInt("Quantidade: ");
+
+    if (produtos[posicao].quantidade >= quantidade) {
+      produtos[posicao].quantidade -= quantidade;
+      lucro += produtos[posicao].preco * quantidade;
+    } else {
+      printf("Quantidade insuficiente no estoque.\n");
+    }
+  } while (temCerteza("Deseja comprar outro produto?"));
+
+  printf("Venda concluída! Lucro: R$%.2f\n", lucro);
+  confirmacao(true);
+  return lucro;
+}
+
+void sair() {
+  printf("YoPão está sendo encerrado...\n");
+  confirmacao(true);
+  printf("FON\n");
+}
+
+/* A função Menu exibe o menu de opções do programa, em seguida lê a entrada do usuário, que é o retorno */
+int menu (float dinheiros) {
+  limpar();
+  printf("YOPÃO - O sistema Full Trab para sua padaria\t\tCaixa: R$%.2f\n\n", dinheiros);
   return inputInt("1 - Cadastrar Produtos\n2 - Listar Produtos\n3 - Buscar Produto\n4 - Alterar Informações de Produto\n5 - Remover Produto\n6 - Realizar Venda\n7 - Sair\n");;
 }
 
 int main() {
   struct produto produtos[MAX];
   int lenth = 0;
+  float dinheiroEmCaixa;
+
+  dinheiroEmCaixa = inputFloat("Digite a quantia inicial no caixa: ");
 
   /* MENU */
   int opcao;
 
   do {
-    opcao = menu();
+    opcao = menu(dinheiroEmCaixa);
     switch (opcao) {
       case 1:
         cadastrar(produtos, lenth);
@@ -231,11 +341,17 @@ int main() {
       case 3:
         buscarProduto(produtos, lenth);
         break;
+      case 4:
+        alterarProduto(produtos, lenth);
+        break;
       case 5:
         if (deletarProduto(produtos, lenth)) lenth--;
         break;
-      //case 5:
+      case 6:
+        dinheiroEmCaixa += venderProduto(produtos, lenth);
+        break;
       case 7:
+        sair();
         break;
       default:
         printf("Opção Inválida. Tente Novamente\n");
