@@ -301,7 +301,24 @@ float venderProduto(struct produto produtos[], int lenth) {
     }
   } while (temCerteza("Deseja comprar outro produto?"));
 
-  printf("Venda concluída! Lucro: R$%.2f\n", lucro);
+  float dinheiroRecebido;
+  do {
+    dinheiroRecebido = inputFloat("Dinheiro Recebido: ");
+
+    if (dinheiroRecebido < lucro) {
+      printf("O valor pago é inferior ao preço da compra.\n");
+      int opcao;
+      do {
+        opcao = inputInt("1 - Tentar Novamente.\n2 - Cancelar compra\n");
+        if (opcao < 1 || opcao > 2) printf("Opção Inválida\n");
+      } while (opcao < 1 || opcao > 2);
+    }
+  } while(dinheiroRecebido < lucro);
+
+  float troco = dinheiroRecebido - lucro;
+  printf("Troco: R$ %.2f\n", troco);
+  printf("Lucro: R$%.2f\n", lucro);
+  printf("Venda concluída!\n");
   confirmacao(true);
   return lucro;
 }
