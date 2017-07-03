@@ -62,7 +62,8 @@ float inputFloat (char mensagem[]) {
   setbuf(stdin, NULL);
   scanf("%[^\n]s", &entrada);
 
-  for (int i = 0; i < strlen(entrada); i++) {
+  int i;
+  for (i = 0; i < strlen(entrada); i++) {
     if (entrada[i] == ',') // Caso seja inserido valor decimal separado por vírgula, este é trocado para ponto.
       entrada[i] = '.';
   }
@@ -90,7 +91,8 @@ void listarProdutos(struct produto produtos[], int lenth) {
   }
 
   printf("%-2s|%-30s|%-10s|%-10s|%-7s\n", "ID", "Nome", "Preço", "Quantidade", "Tipo");
-  for (int i = 0; i < lenth; i++) {
+  int i
+  for (i = 0; i < lenth; i++) {
     char tipo[10];
 
     if (produtos[i].categoria == 1) strcpy(tipo, "Comida");
@@ -138,7 +140,8 @@ void cadastrar(struct produto produtos[], int lenth) {
 int buscarIndice (struct produto produtos[], int lenth, int id) {
   int posicao = -1;
 
-  for (int i = 0; i < lenth; i++) {
+  int i;
+  for (i = 0; i < lenth; i++) {
     if (produtos[i].id == id) {
       posicao = i;
     }
