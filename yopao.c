@@ -185,6 +185,7 @@ bool temCerteza (char mensagem[]) {
   }
 }
 
+// Esta função busca por um produto e então permite que o usuário modifique suas propriedades.
 void alterarProduto(struct produto produtos[], int lenth) {
   limpar();
 
@@ -265,6 +266,9 @@ int deletarProduto(struct produto produtos[], int lenth) {
   return true;
 }
 
+// A função venderProduto serve para vender produtos cadastrados no sistema.
+// Ela tem como retorno o lucro da venda, que é calculado pela seguinte fórmula: lucro = (quantidade1 * preço1) + (quantidade2 * preco2) + (quantidadeN * precoN)
+// Ela também imprime na tela o troco do cliente e o lucro obtido.
 float venderProduto(struct produto produtos[], int lenth) {
   limpar();
 
@@ -288,7 +292,7 @@ float venderProduto(struct produto produtos[], int lenth) {
       id = inputInt("ID do item a ser vendido (-1 para cancelar): ");
       if (id == -1) return 0;
 
-      posicao = buscarIndice(produtos, lenth, id);
+      posicao = buscarIndice(produtos, lenth, id);// Buscar o produto usando a função de busca.
     } while (posicao == -1);
 
     quantidade = inputInt("Quantidade: ");
